@@ -26,7 +26,7 @@ export const SetupWorkflowForm = StoreAuthWorkflow.addStep(
     description:
       "1. Open <https://www.nytimes.com/puzzles/spelling-bee|Spelling Bee>.\n" +
       "2. Open the browser console (on the Mac: ⌥⌘C in Safari, ⌥⌘J in Chrome) and enter:\n" +
-      "```window.alert(document.cookie.split('; ').find(c => c.startsWith('NYT-S')).split('=')[1])```\n" +
+      "```window.prompt('Your cookie:', document.cookie.split('; ').find(c => c.startsWith('NYT-S')).split('=')[1])```\n" +
       "3. Copy the displayed token and paste it below.",
     interactivity: StoreAuthWorkflow.inputs.interactivity,
     fields: {

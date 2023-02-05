@@ -63,7 +63,8 @@ async function postWords(
     await client.chat.postMessage({
       channel: channel,
       text:
-        "I couldn't find an auth token for you. Click <https://slack.com/shortcuts/Ft04N2S8EMDY/577bec46b867e18003fafe573f8015e5|here> to set one.",
+        // "I couldn't find an auth token for you. Click <https://slack.com/shortcuts/Ft04N2S8EMDY/577bec46b867e18003fafe573f8015e5|here> to set one.",
+        "I couldn't find an auth token for you. Click <https://slack.com/shortcuts/Ft04NTFRR200/75386d12c12ef1d9bb9626f97bbe12ec|here> to set one.",
     });
   } else {
     // get the current game number
