@@ -49,7 +49,7 @@ async function postWords(
   client: SlackAPIClient,
   user_id: string,
   channel: string,
-  timestamp: string,
+  _timestamp: string,
 ) {
   // Querying datastore for stored token
   const result = await client.apps.datastore.query({
@@ -67,82 +67,65 @@ async function postWords(
         "I couldn't find an auth token for you. Click <https://slack.com/shortcuts/Ft04NTFRR200/75386d12c12ef1d9bb9626f97bbe12ec|here> to set one.",
     });
   } else {
-    // get the current game number
+    // fetch the words
+    const auth_token = items[0]["nyt_token"];
     const response = await fetch(
-      "https://www.nytimes.com/puzzles/spelling-bee",
+      `https://www.nytimes.com/svc/games/state/spelling_bee/latest`,
+      {
+        headers: {
+          "nyt-s": auth_token,
+        },
+      },
     );
     if (!response.ok) {
-      console.log("Error fetching game id:", response.statusText);
+      console.log("Error fetching game data:", response.statusText);
       return;
     }
 
-    const body = await response.text();
-    const match = body.match(
-      />window\.gameData = (\{.*?})<\/script>/,
-    );
-    if (match) {
-      const gameData = JSON.parse(match[1]);
-      const gameId = gameData["today"]["id"];
-      // fetch the words
-      const auth_token = items[0]["nyt_token"];
-      const response = await fetch(
-        `https://edge.games.nyti.nyt.net/svc/spelling-bee/v1/game/${gameId}.json`,
-        {
-          headers: {
-            "nyt-s": auth_token,
-          },
-        },
-      );
-      if (!response.ok) {
-        console.log("Error fetching game data:", response.statusText);
-        return;
+    const data = await response.json();
+    const words = data["game_data"]["answers"];
+    const score = calculateScore(words);
+    words.sort();
+    const formattedWords = words.map((word: string) => {
+      // capitalize first letter
+      const capWord = word.charAt(0).toUpperCase() + word.slice(1);
+      // highlight pangrams
+      if (isPangram(word)) {
+        return `*${capWord}*`;
       }
+      return capWord;
+    });
 
-      const data = await response.json();
-      const words = data["answers"];
-      const score = calculateScore(words);
-      words.sort();
-      const formattedWords = words.map((word: string) => {
-        // capitalize first letter
-        const capWord = word.charAt(0).toUpperCase() + word.slice(1);
-        // highlight pangrams
-        if (isPangram(word)) {
-          return `*${capWord}*`;
+    await client.chat.postMessage({
+      channel: channel,
+      text: `Your score is ${score}...`,
+    });
+
+    // find the message to post to
+    let messageTs = null;
+    const messagesResp = await client.conversations.history({
+      channel: channel,
+    });
+    if (messagesResp.ok) {
+      for (const message of messagesResp["messages"]) {
+        if (message.bot_id && message.text.indexOf("Your score is") === 0) {
+          messageTs = message.ts;
+          break;
         }
-        return capWord;
-      });
-
-      await client.chat.postMessage({
-        channel: channel,
-        text: `Your score is ${score}...`,
-      });
-
-      // find the message to post to
-      let messageTs = null;
-      const messagesResp = await client.conversations.history({
-        channel: channel,
-      });
-      if (messagesResp.ok) {
-        for (const message of messagesResp["messages"]) {
-          if (message.bot_id && message.text.indexOf("Your score is") === 0) {
-            messageTs = message.ts;
-            break;
-          }
-        }
-      } else {
-        console.log("Error fetching message history:", messagesResp.error);
       }
-
-      await client.chat.postMessage({
-        channel: channel,
-        thread_ts: messageTs,
-        text: formattedWords.join("\n"),
-      });
-
-      // if (!resp.ok) {
-      //   console.log("post resp:", resp);
-      // }
+    } else {
+      console.log("Error fetching message history:", messagesResp.error);
     }
+
+    await client.chat.postMessage({
+      channel: channel,
+      thread_ts: messageTs,
+      text: formattedWords.join("\n"),
+    });
+
+    // if (!resp.ok) {
+    //   console.log("post resp:", resp);
+    // }
   }
 }
 
