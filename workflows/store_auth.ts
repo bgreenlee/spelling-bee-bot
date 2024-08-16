@@ -23,11 +23,13 @@ export const SetupWorkflowForm = StoreAuthWorkflow.addStep(
   {
     title: "NYT Auth Cookie",
     submit_label: "Submit",
-    description:
-      "1. Open <https://www.nytimes.com/puzzles/spelling-bee|Spelling Bee>.\n" +
-      "2. Open the browser console (on the Mac: ⌥⌘C in Safari, ⌥⌘J in Chrome) and enter:\n" +
-      "```window.prompt('Your cookie:', document.cookie.split('; ').find(c => c.startsWith('NYT-S')).split('=')[1])```\n" +
-      "3. Copy the displayed token and paste it below.",
+    description: `
+1. Open <https://www.nytimes.com/puzzles/spelling-bee|Spelling Bee>.
+2. Open the browser console (on the Mac: ⌥⌘C in Safari, ⌥⌘J in Chrome).
+3. In Safari, click on the "Storage" tab. In Chrome, click on the "Application" tab.
+4. In the left-hand panel, click on "Cookies", then click on "https://www.nytimes.com".
+5. Find the cookie named "NYT-S" and copy the value.
+6. Paste that value below.`,
     interactivity: StoreAuthWorkflow.inputs.interactivity,
     fields: {
       required: ["authInput"],

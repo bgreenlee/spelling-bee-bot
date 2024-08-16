@@ -40,6 +40,7 @@ export default SlackFunction(
     });
 
     if (!putResponse.ok) {
+      console.log("error storing auth token", putResponse.error);
       return await {
         error: putResponse.error,
         outputs: {},

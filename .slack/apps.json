@@ -1,10 +1,9 @@
 {
   "apps": {
-    "fiasco": {
-      "name": "fiasco",
+    "T04LQ00PM": {
       "app_id": "A04MX6Y6ZBQ",
-      "team_id": "T04LQ00PM",
-      "IsDev": false
+      "team_domain": "fiasco",
+      "team_id": "T04LQ00PM"
     }
   },
   "default": "fiasco"
